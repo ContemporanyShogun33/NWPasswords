@@ -1,16 +1,4 @@
 import streamlit as st
-import subprocess
-import sys
-
-# --- AUTO-INSTALADOR DE DEPENDÊNCIAS REALISTA ---
-# Se o servidor do Streamlit esquecer de instalar, o próprio Python força a instalação via PIP
-try:
-    from cryptography.fernet import Fernet
-except ModuleNotFoundError:
-    with st.spinner("Iniciando provisionamento de infraestrutura de cibersegurança (cryptography)..."):
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "cryptography"])
-    from cryptography.fernet import Fernet
-
 import sqlite3
 import random
 import string
@@ -37,19 +25,29 @@ st.markdown("""
 ARQUIVO_CHAVE = "master_web.key"
 BANCO_DADOS = "dados_web.db"
 
-# --- ENGINE DE CRIPTOGRAFIA AVANÇADA (AES-256 FERNET) ---
-def gerar_chave_derivada(senha_mestra):
-    hash_senha = hashlib.sha256(senha_mestra.encode()).digest()
-    return base64.urlsafe_b64encode(hash_senha)
+# --- 🧠 ALGORITMO DE CRIPTOGRAFIA PROPRIETÁRIO KALEB MACHADO (MATEMÁTICA PURA) ---
+def criptografar_texto(texto, chave_mestra):
+    # Transforma a senha mestra em um padrão numérico
+    chave_numerica = [ord(c) for c in hashlib.sha256(chave_mestra.encode()).hexdigest()]
+    texto_cripto = ""
+    for i, caractere in enumerate(texto):
+        # Desloca os caracteres usando matemática e a chave mestra
+        deslocamento = chave_numerica[i % len(chave_numerica)]
+        novo_caractere = chr((ord(caractere) + deslocamento) % 1114111)
+        texto_cripto += novo_caractere
+    # Codifica em Base64 para salvar com segurança no SQLite
+    return base64.b64encode(texto_cripto.encode('utf-8')).decode('utf-8')
 
-def criptografar_texto(texto, chave):
-    f = Fernet(chave)
-    return f.encrypt(texto.encode()).decode()
-
-def descriptografar_texto(texto_criptografado, chave):
+def descriptografar_texto(texto_criptografado, chave_mestra):
     try:
-        f = Fernet(chave)
-        return f.decrypt(texto_criptografado.encode()).decode()
+        texto_original_b64 = base64.b64decode(texto_criptografado.encode('utf-8')).decode('utf-8')
+        chave_numerica = [ord(c) for c in hashlib.sha256(chave_mestra.encode()).hexdigest()]
+        texto_limpo = ""
+        for i, caractere in enumerate(texto_original_b64):
+            deslocamento = chave_numerica[i % len(chave_numerica)]
+            original = chr((ord(caractere) - deslocamento) % 1114111)
+            texto_limpo += original
+        return texto_limpo
     except Exception:
         return "⚠️ Erro de Descriptografia"
 
@@ -73,13 +71,13 @@ conn, cursor = inicializar_banco()
 # Estados de sessão no navegador
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
-if "chave_sessao" not in st.session_state:
-    st.session_state.chave_sessao = None
+if "senha_mestra_sessao" not in st.session_state:
+    st.session_state.senha_mestra_sessao = ""
 
 # --- FLUXO 1: CADASTRO INICIAL DA CHAVE MESTRA ---
 if not os.path.exists(ARQUIVO_CHAVE):
     st.title("Configurar NWPasswords Crypt 🔒")
-    st.subheader("Crie sua chave mestra. Seus dados serão trancados com criptografia simétrica AES-256.")
+    st.subheader("Crie sua chave mestra. Seus dados serão trancados com criptografia proprietária.")
     
     nova_master = st.text_input("Defina sua Chave Mestra:", type="password")
     if st.button("Ativar Criptografia do Cofre", type="primary"):
@@ -98,7 +96,7 @@ elif not st.session_state.autenticado:
     st.subheader("O banco dados_web.db está encriptado. Insira a Chave Mestra:")
     
     senha_login = st.text_input("Chave Mestra:", type="password")
-    if st.button("Desbloquear e Derivar Chaves", type="primary"):
+    if st.button("Desbloquear Cofre", type="primary"):
         hash_digitado = hashlib.sha256(senha_login.encode()).hexdigest()
         
         with open(ARQUIVO_CHAVE, "r") as f:
@@ -106,22 +104,23 @@ elif not st.session_state.autenticado:
         
         if hash_digitado == hash_salvo:
             st.session_state.autenticado = True
-            st.session_state.chave_sessao = gerar_chave_derivada(senha_login)
+            # Guarda a senha apenas na memória temporária para descriptografar os cards
+            st.session_state.senha_mestra_sessao = senha_login
             st.rerun()
         else:
             st.error("Chave Mestra incorreta! Os dados permanecem trancados em blocos binários.")
 
 # --- FLUXO 3: GERENCIADOR CRIPTOGRAFADO (PAINEL PRINCIPAL) ---
 else:
-    st.title("NWPasswords Enterprise v3.0 🖥️")
-    st.caption("Cofre de Senhas Criptografado em Nuvem | Arquitetura Kaleb Machado")
+    st.title("NWPasswords Enterprise v3.5 🖥️")
+    st.caption("Cofre de Senhas Criptografado em Nuvem (Python 3.14 Nativo) | Arquitetura Kaleb Machado")
     st.markdown("---")
     
     st.sidebar.title("NWPasswords Crypt")
     st.sidebar.info("**Salmo 23:1**\n\n\"O Senhor é o meu pastor, nada me faltará.\" 🙏")
     if st.sidebar.button("Bloquear Cofre (Sair)", type="primary"):
         st.session_state.autenticado = False
-        st.session_state.chave_sessao = None
+        st.session_state.senha_mestra_sessao = ""
         st.rerun()
 
     col_cadastro, col_cofre = st.columns([1, 1.3])
@@ -148,11 +147,12 @@ else:
             if not servico or not usuario or (not senha and "senha_sugerida" not in st.session_state):
                 st.warning("Preencha todos os dados.")
             else:
-                senha_real = st.session_state.get("senha_sugerida", len)
-                if not senha_real or senha_real == len: 
+                senha_real = st.session_state.get("senha_sugerida", str)
+                if type(senha_real) is not str: 
                     senha_real = senha
                 
-                senha_criptografada = criptografar_texto(senha_real, st.session_state.chave_sessao)
+                # CRIPTOGRAFIA USANDO O ALGORITMO INTERNO DE SEGURANÇA
+                senha_criptografada = criptografar_texto(senha_real, st.session_state.senha_mestra_sessao)
                 cursor.execute("INSERT INTO credenciais (servico, usuario, senha) VALUES (?, ?, ?)", (servico, usuario, senha_criptografada))
                 conn.commit()
                 
@@ -173,11 +173,12 @@ else:
             
         linhas = cursor.fetchall()
         
-        if not lines:
+        if not linhas:
             st.caption("Nenhum bloco de dados localizado no cofre.")
         else:
             for id_item, serv, usu, sen_cripto in linhas:
-                senha_real_exibir = descriptografar_texto(sen_cripto, st.session_state.chave_sessao)
+                # REVERTE A MATEMÁTICA NA TELA APENAS SE FOR O DONO LOGADO
+                senha_real_exibir = descriptografar_texto(sen_cripto, st.session_state.senha_mestra_sessao)
                 
                 st.markdown(f"""
                 <div class="vault-card">
