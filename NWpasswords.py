@@ -1,11 +1,22 @@
 import streamlit as st
+import subprocess
+import sys
+
+# --- AUTO-INSTALADOR DE DEPENDÊNCIAS REALISTA ---
+# Se o servidor do Streamlit esquecer de instalar, o próprio Python força a instalação via PIP
+try:
+    from cryptography.fernet import Fernet
+except ModuleNotFoundError:
+    with st.spinner("Iniciando provisionamento de infraestrutura de cibersegurança (cryptography)..."):
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "cryptography"])
+    from cryptography.fernet import Fernet
+
 import sqlite3
 import random
 import string
 import hashlib
 import os
 import base64
-from cryptography.fernet import Fernet
 
 # Configuração da página web em Modo Escuro
 st.set_page_config(page_title="NWPasswords | Cryptographic Vault", layout="wide")
@@ -28,7 +39,6 @@ BANCO_DADOS = "dados_web.db"
 
 # --- ENGINE DE CRIPTOGRAFIA AVANÇADA (AES-256 FERNET) ---
 def gerar_chave_derivada(senha_mestra):
-    # Deriva uma chave Fernet de 32 bytes usando o hash SHA-256 da senha mestra
     hash_senha = hashlib.sha256(senha_mestra.encode()).digest()
     return base64.urlsafe_b64encode(hash_senha)
 
@@ -76,7 +86,6 @@ if not os.path.exists(ARQUIVO_CHAVE):
         if len(nova_master) < 6:
             st.warning("A senha mestra precisa ter pelo menos 6 caracteres.")
         else:
-            # Salva o hash para validação de login futura
             hash_validacao = hashlib.sha256(nova_master.encode()).hexdigest()
             with open(ARQUIVO_CHAVE, "w") as f:
                 f.write(hash_validacao)
@@ -97,7 +106,6 @@ elif not st.session_state.autenticado:
         
         if hash_digitado == hash_salvo:
             st.session_state.autenticado = True
-            # DERIVAÇÃO DA CHAVE: Guarda a chave de descriptografia apenas na memória da sessão
             st.session_state.chave_sessao = gerar_chave_derivada(senha_login)
             st.rerun()
         else:
@@ -109,7 +117,6 @@ else:
     st.caption("Cofre de Senhas Criptografado em Nuvem | Arquitetura Kaleb Machado")
     st.markdown("---")
     
-    # Barra Lateral
     st.sidebar.title("NWPasswords Crypt")
     st.sidebar.info("**Salmo 23:1**\n\n\"O Senhor é o meu pastor, nada me faltará.\" 🙏")
     if st.sidebar.button("Bloquear Cofre (Sair)", type="primary"):
@@ -145,9 +152,7 @@ else:
                 if not senha_real or senha_real == len: 
                     senha_real = senha
                 
-                # CRIPTOGRAFIA ATÔMICA ANTES DE SALVAR NO SQLITE
                 senha_criptografada = criptografar_texto(senha_real, st.session_state.chave_sessao)
-                
                 cursor.execute("INSERT INTO credenciais (servico, usuario, senha) VALUES (?, ?, ?)", (servico, usuario, senha_criptografada))
                 conn.commit()
                 
@@ -168,11 +173,10 @@ else:
             
         linhas = cursor.fetchall()
         
-        if not linhas:
+        if not lines:
             st.caption("Nenhum bloco de dados localizado no cofre.")
         else:
             for id_item, serv, usu, sen_cripto in linhas:
-                # DESCRIPTOGRAFIA EM MEMÓRIA APENAS NA HORA DE EXIBIR NA TELA
                 senha_real_exibir = descriptografar_texto(sen_cripto, st.session_state.chave_sessao)
                 
                 st.markdown(f"""
@@ -189,4 +193,3 @@ else:
             conn.commit()
             st.success("Cofre formatado!")
             st.rerun()
-
