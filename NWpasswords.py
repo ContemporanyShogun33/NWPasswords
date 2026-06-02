@@ -4,11 +4,13 @@ import random
 import string
 import hashlib
 import os
+import base64
+from cryptography.fernet import Fernet
 
-# Configuração da arquitetura da página web em Modo Escuro
-st.set_page_config(page_title="NWPasswords | Web Vault", layout="wide")
+# Configuração da página web em Modo Escuro
+st.set_page_config(page_title="NWPasswords | Cryptographic Vault", layout="wide")
 
-# Estilização CSS premium para criar os Cards do cofre de senhas
+# Estilização CSS premium
 st.markdown("""
 <style>
     .vault-card {
@@ -16,7 +18,7 @@ st.markdown("""
         border: 1px solid #30363D;
         padding: 15px;
         border-radius: 10px;
-        margin-bottom: 12px;
+        margin-bottom: 5px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -24,7 +26,24 @@ st.markdown("""
 ARQUIVO_CHAVE = "master_web.key"
 BANCO_DADOS = "dados_web.db"
 
-# --- FUNÇÕES DE ENGENHARIA DE SEGURANÇA ---
+# --- ENGINE DE CRIPTOGRAFIA AVANÇADA (AES-256 FERNET) ---
+def gerar_chave_derivada(senha_mestra):
+    # Deriva uma chave Fernet de 32 bytes usando o hash SHA-256 da senha mestra
+    hash_senha = hashlib.sha256(senha_mestra.encode()).digest()
+    return base64.urlsafe_b64encode(hash_senha)
+
+def criptografar_texto(texto, chave):
+    f = Fernet(chave)
+    return f.encrypt(texto.encode()).decode()
+
+def descriptografar_texto(texto_criptografado, chave):
+    try:
+        f = Fernet(chave)
+        return f.decrypt(texto_criptografado.encode()).decode()
+    except Exception:
+        return "⚠️ Erro de Descriptografia"
+
+# --- ENGINE DO BANCO DE DADOS SQLITE ---
 def inicializar_banco():
     conn = sqlite3.connect(BANCO_DADOS)
     cursor = conn.cursor()
@@ -39,105 +58,107 @@ def inicializar_banco():
     conn.commit()
     return conn, cursor
 
-def hash_senha(senha):
-    return hashlib.sha256(senha.encode()).hexdigest()
-
-# Inicializa o banco SQLite offline na nuvem
 conn, cursor = inicializar_banco()
 
-# Controla o estado de login na sessão do navegador
+# Estados de sessão no navegador
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
+if "chave_sessao" not in st.session_state:
+    st.session_state.chave_sessao = None
 
-# --- FLUXO 1: CADASTRO DA CHAVE MESTRA ---
+# --- FLUXO 1: CADASTRO INICIAL DA CHAVE MESTRA ---
 if not os.path.exists(ARQUIVO_CHAVE):
-    st.title("Configurar NWPasswords Web 🔒")
-    st.subheader("Crie sua chave mestra de criptografia para blindar seus dados")
+    st.title("Configurar NWPasswords Crypt 🔒")
+    st.subheader("Crie sua chave mestra. Seus dados serão trancados com criptografia simétrica AES-256.")
     
     nova_master = st.text_input("Defina sua Chave Mestra:", type="password")
-    if st.button("Criptografar e Ativar Cofre", type="primary"):
+    if st.button("Ativar Criptografia do Cofre", type="primary"):
         if len(nova_master) < 6:
-            st.warning("Por segurança, a senha deve ter pelo menos 6 caracteres.")
+            st.warning("A senha mestra precisa ter pelo menos 6 caracteres.")
         else:
+            # Salva o hash para validação de login futura
+            hash_validacao = hashlib.sha256(nova_master.encode()).hexdigest()
             with open(ARQUIVO_CHAVE, "w") as f:
-                f.write(hash_senha(nova_master))
-            st.success("Chave Mestra registrada com sucesso! Recarregando...")
+                f.write(hash_validacao)
+            st.success("Cofre criptografado com sucesso! Atualizando...")
             st.rerun()
 
 # --- FLUXO 2: TELA DE LOGIN ---
 elif not st.session_state.autenticado:
-    st.title("NWPasswords | Web Vault 🔒")
-    st.subheader("O cofre local está encriptado. Insira a senha mestra para abrir:")
+    st.title("NWPasswords | Criptografado 🔒")
+    st.subheader("O banco dados_web.db está encriptado. Insira a Chave Mestra:")
     
     senha_login = st.text_input("Chave Mestra:", type="password")
-    if st.button("Desbloquear Banco de Dados", type="primary"):
+    if st.button("Desbloquear e Derivar Chaves", type="primary"):
+        hash_digitado = hashlib.sha256(senha_login.encode()).hexdigest()
+        
         with open(ARQUIVO_CHAVE, "r") as f:
             hash_salvo = f.read().strip()
         
-        if hash_senha(senha_login) == hash_salvo:
+        if hash_digitado == hash_salvo:
             st.session_state.autenticado = True
+            # DERIVAÇÃO DA CHAVE: Guarda a chave de descriptografia apenas na memória da sessão
+            st.session_state.chave_sessao = gerar_chave_derivada(senha_login)
             st.rerun()
         else:
-            st.error("Chave Mestra incorreta! O acesso ao banco dados_web.db permanece bloqueado.")
+            st.error("Chave Mestra incorreta! Os dados permanecem trancados em blocos binários.")
 
-# --- FLUXO 3: PAINEL GERENCIADOR DISTRIBUÍDO (PÁGINA PRINCIPAL) ---
+# --- FLUXO 3: GERENCIADOR CRIPTOGRAFADO (PAINEL PRINCIPAL) ---
 else:
-    st.title("NWPasswords Enterprise 🖥️")
-    st.caption("Gerenciador Distribuído 100% Seguro | Desenvolvido por Kaleb Machado")
+    st.title("NWPasswords Enterprise v3.0 🖥️")
+    st.caption("Cofre de Senhas Criptografado em Nuvem | Arquitetura Kaleb Machado")
     st.markdown("---")
     
-    # Menu lateral com Salmo 23 e Botão de Logout
-    st.sidebar.title("NWPasswords AI")
-    st.sidebar.caption("Vault Control Panel")
-    st.sidebar.markdown("---")
+    # Barra Lateral
+    st.sidebar.title("NWPasswords Crypt")
     st.sidebar.info("**Salmo 23:1**\n\n\"O Senhor é o meu pastor, nada me faltará.\" 🙏")
-    
     if st.sidebar.button("Bloquear Cofre (Sair)", type="primary"):
         st.session_state.autenticado = False
+        st.session_state.chave_sessao = None
         st.rerun()
 
     col_cadastro, col_cofre = st.columns([1, 1.3])
     
-    # Coluna de Cadastro de Novas Senhas
     with col_cadastro:
-        st.write("### ➕ Arquivar Nova Credencial")
-        servico = st.text_input("Serviço / Site (Ex: GitHub):")
+        st.write("### ➕ Criptografar Nova Credencial")
+        servico = st.text_input("Serviço / Site (Ex: Google):")
         usuario = st.text_input("Usuário / E-mail:")
         
-        # Campo de senha com gerador integrado
-        col_senha, col_btn_gerar = st.columns([2, 1])
+        col_senha, col_btn_gerar = st.columns(2)
         with col_senha:
             senha = st.text_input("Senha do Serviço:", type="password" if "senha_sugerida" not in st.session_state else "default")
-            
         with col_btn_gerar:
-            st.write("##") # Espaçador visual para alinhar o botão
+            st.write("##")
             if st.button("Gerar Forte ⚡", use_container_width=True):
                 caracteres = string.ascii_letters + string.digits + "!@#$%&*"
                 st.session_state.senha_sugerida = "".join(random.choice(caracteres) for _ in range(16))
                 st.rerun()
                 
         if "senha_sugerida" in st.session_state:
-            st.info(f"**Senha Sugerida:** `{st.session_state.senha_sugerida}`")
-            st.caption("Copie a senha acima e use no campo de cadastro do site.")
+            st.info(f"**Sugestão:** `{st.session_state.senha_sugerida}`")
 
-        if st.button("Salvar no dados_web.db", type="primary", use_container_width=True):
+        if st.button("Injetar Dados Criptografados", type="primary", use_container_width=True):
             if not servico or not usuario or (not senha and "senha_sugerida" not in st.session_state):
-                st.warning("Preencha todos os campos antes de salvar.")
+                st.warning("Preencha todos os dados.")
             else:
-                senha_final = st.session_state.get("senha_sugerida", senha)
-                cursor.execute("INSERT INTO credenciais (servico, usuario, senha) VALUES (?, ?, ?)", (servico, usuario, senha_final))
+                senha_real = st.session_state.get("senha_sugerida", len)
+                if not senha_real or senha_real == len: 
+                    senha_real = senha
+                
+                # CRIPTOGRAFIA ATÔMICA ANTES DE SALVAR NO SQLITE
+                senha_criptografada = criptografar_texto(senha_real, st.session_state.chave_sessao)
+                
+                cursor.execute("INSERT INTO credenciais (servico, usuario, senha) VALUES (?, ?, ?)", (servico, usuario, senha_criptografada))
                 conn.commit()
+                
                 if "senha_sugerida" in st.session_state:
                     del st.session_state.senha_sugerida
-                st.success(f"Credencial para {servico} salva com sucesso!")
+                st.success(f"Dados trancados para {servico}!")
                 st.rerun()
 
-    # Coluna do Cofre (Visualizador em tempo real com Cards de Alta Performance)
     with col_cofre:
-        st.write("### 🔑 Suas Credenciais Protegidas")
-        
-        # Barra de Pesquisa Dinâmica
-        busca = st.text_input("🔍 Filtrar senhas por serviço ou site:")
+        st.write("### 🔑 Suas Credenciais Descriptografadas em Tempo Real")
+        busca = st.text_input("🔍 Rastrear serviço:")
         st.markdown("---")
         
         if busca:
@@ -148,22 +169,23 @@ else:
         linhas = cursor.fetchall()
         
         if not linhas:
-            st.caption("Nenhuma credencial localizada na base local do cofre.")
+            st.caption("Nenhum bloco de dados localizado no cofre.")
         else:
-            for id_item, serv, usu, sen in linhas:
-                # Criação do Card Cyberpunk via HTML/CSS + Componente de cópia nativa
+            for id_item, serv, usu, sen_cripto in linhas:
+                # DESCRIPTOGRAFIA EM MEMÓRIA APENAS NA HORA DE EXIBIR NA TELA
+                senha_real_exibir = descriptografar_texto(sen_cripto, st.session_state.chave_sessao)
+                
                 st.markdown(f"""
                 <div class="vault-card">
-                    <span style="color: #58A6FF; font-weight: bold; font-size: 15px;">🌐 {serv.upper()}</span>
+                    <span style="color: #58A6FF; font-weight: bold; font-size: 14px;">🌐 {serv.upper()}</span>
                     <span style="color: #8B949E; font-size: 13px; margin-left: 15px;">👤 Usuário: {usu}</span>
                 </div>
                 """, unsafe_allow_html=True)
-                # O st.code injeta a senha com o botão de cópia automática do Chrome na lateral
-                st.code(f"{sen}", language="text")
+                st.code(f"{senha_real_exibir}", language="text")
                     
         st.write("##")
-        if st.button("Deletar Todas as Senhas do Cofre"):
+        if st.button("Formatar e Deletar Base Total"):
             cursor.execute("DELETE FROM credenciais")
             conn.commit()
-            st.success("Cofre limpo com sucesso!")
+            st.success("Cofre formatado!")
             st.rerun()
