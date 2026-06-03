@@ -45,7 +45,6 @@ st.markdown("""
         display: flex;
         align-items: center;
     }
-    .card-text { color: #FFFFFF !important; font-size: 14px; font-weight: 500; }
     
     /* ANIMAÇÃO DA SENHA DANÇANDO (Efeito Wave Interativo) */
     @keyframes cyber-dance {
@@ -244,7 +243,6 @@ else:
                 c_info, c_senha_dançando = st.columns([1.5, 1])
                 
                 with c_info:
-                    st.markdown(f"""
-                    <div class="vault-card">
-                        <div class="card-text">
-                            <span style="color: #58A6FF; font-weight: bold;">🌐 {serv.upper()}</span><br>
+                    # CORREÇÃO DEFINITIVA: HTML inline sem aspas triplas para não quebrar a sintaxe do Python
+                    html_card = f'<div class="vault-card"><div style="color:#FFFFFF; font-size:14px; font-weight:500;"><span style="color:#58A6FF; font-weight:bold;">🌐 {serv.upper()}</span><br><span style="color:#8B949E; font-size:11px;">👤 Usuário: {usu}</span></div></div>'
+
