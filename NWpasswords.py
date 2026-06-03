@@ -6,19 +6,38 @@ import hashlib
 import os
 import base64
 
-# 1. Configuração de Arquitetura Web de Elite
+# 1. Configuração de Arquitetura Web de Alta Performance
 st.set_page_config(
     page_title="NWPasswords | Pro Cryptographic Vault", 
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 🎨 DESIGN ANIVELADO E ANIMAÇÃO DA SENHA DANÇANDO (CSS ENTERPRISE)
+# 🎨 UI/UX FORÇADA EM MODO ESCURO E ANIMAÇÃO DA SENHA DANÇANDO
 st.markdown("""
 <style>
-    /* Cartão Executivo Azul e Branco */
+    /* Força o fundo escuro corporativo na página inteira e remove o branco */
+    .stApp {
+        background-color: #0D1117 !important;
+        color: #FFFFFF !important;
+    }
+    
+    /* Customização dos textos principais */
+    h1, h2, h3, h4, p, label, .stMarkdown {
+        color: #FFFFFF !important;
+    }
+    
+    /* Input de texto estilizado em modo hacker */
+    .stTextInput input {
+        background-color: #161B22 !important;
+        color: #FFFFFF !important;
+        border: 1px solid #30363D !important;
+        border-radius: 6px !important;
+    }
+
+    /* Cartão Executivo Azul das Senhas */
     .vault-card {
-        background-color: #0D1117;
+        background-color: #161B22;
         border: 2px solid #58A6FF;
         padding: 12px;
         border-radius: 10px;
@@ -28,16 +47,16 @@ st.markdown("""
     }
     .card-text { color: #FFFFFF !important; font-size: 14px; font-weight: 500; }
     
-    /* EFEITO DINÂMICO: FAZ A SENHA DANÇAR NA TELA */
+    /* ANIMAÇÃO DA SENHA DANÇANDO (Efeito Wave Interativo) */
     @keyframes cyber-dance {
         0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-        25% { transform: translateY(-4px) translateX(2px) rotate(-1deg); }
+        25% { transform: translateY(-3px) translateX(2px) rotate(-1deg); }
         50% { transform: translateY(0px) translateX(-2px) rotate(0deg); }
-        75% { transform: translateY(4px) translateX(2px) rotate(1deg); }
+        75% { transform: translateY(3px) translateX(2px) rotate(1deg); }
         100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
     }
     
-    /* Aplica a animação diretamente no bloco de código do Streamlit */
+    /* Aplica a animação ao passar o mouse na caixinha da senha */
     .stCodeBlock:hover {
         animation: cyber-dance 0.4s ease-in-out infinite !important;
         border: 1px solid #58A6FF !important;
@@ -188,7 +207,7 @@ else:
             st.info(f"**Sugestão:** `{st.session_state.senha_sugerida}`")
 
         if st.button("Injetar Dados Criptografados", type="primary", use_container_width=True):
-            if not servico or not usuario or (not list and "senha_sugerida" not in st.session_state):
+            if not servico or not usuario or (not senha and "senha_sugerida" not in st.session_state):
                 st.warning("Preencha todos os dados.")
             else:
                 senha_real = st.session_state.get("senha_sugerida", "default_pass")
@@ -229,19 +248,3 @@ else:
                     <div class="vault-card">
                         <div class="card-text">
                             <span style="color: #58A6FF; font-weight: bold;">🌐 {serv.upper()}</span><br>
-                            <span style="color: #8B949E; font-size: 11px;">👤 Usuário: {usu}</span>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                with c_senha_dançando:
-                    st.code(f"{senha_real_exibir}", language="text")
-                    
-        st.write("##")
-        if st.button("Formatar e Deletar Base Total"):
-            cursor.execute("DELETE FROM credenciais")
-            conn.commit()
-            st.success("Cofre formatado!")
-            st.rerun()
-
-
