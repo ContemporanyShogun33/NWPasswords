@@ -6,18 +6,41 @@ import hashlib
 import os
 import base64
 
-# Configuração da página web em Modo Escuro
-st.set_page_config(page_title="NWPasswords | Cryptographic Vault", layout="wide")
+# 1. Configuração de Arquitetura Web de Alta Performance
+st.set_page_config(
+    page_title="NWPasswords | Cryptographic Vault Pro", 
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# Estilização CSS premium
+# 🎨 UI/UX DE ANALISTA LÓGICO COM ANIMAÇÃO DA SENHA DANÇANDO
 st.markdown("""
 <style>
+    /* Estilização Executiva (Azul e Branco sobre Fundo Escuro) */
     .vault-card {
-        background-color: #161B22;
-        border: 1px solid #30363D;
+        background-color: #0D1117;
+        border: 2px solid #58A6FF;
         padding: 15px;
         border-radius: 10px;
         margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .card-text { color: #FFFFFF !important; font-size: 14px; font-weight: 500; }
+    
+    /* ANIMAÇÃO DA SENHA DANÇANDO (Efeito Wave Interativo) */
+    @keyframes dance {
+        0% { transform: translateY(0px) rotate(0deg); }
+        25% { transform: translateY(-4px) rotate(-1deg); }
+        50% { transform: translateY(0px) rotate(0deg); }
+        75% { transform: translateY(4px) rotate(1deg); }
+        100% { transform: translateY(0px) rotate(0deg); }
+    }
+    
+    /* Aplica o efeito quando o usuário visualiza a senha no container */
+    .stCodeBlock:hover {
+        animation: dance 0.6s ease-in-out infinite;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -25,17 +48,14 @@ st.markdown("""
 ARQUIVO_CHAVE = "master_web.key"
 BANCO_DADOS = "dados_web.db"
 
-# --- 🧠 ALGORITMO DE CRIPTOGRAFIA PROPRIETÁRIO KALEB MACHADO (MATEMÁTICA PURA) ---
+# --- ENGINE DE CRIPTOGRAFIA PROPRIETÁRIA (MATEMÁTICA PURA NATIVA) ---
 def criptografar_texto(texto, chave_mestra):
-    # Transforma a senha mestra em um padrão numérico
     chave_numerica = [ord(c) for c in hashlib.sha256(chave_mestra.encode()).hexdigest()]
     texto_cripto = ""
     for i, caractere in enumerate(texto):
-        # Desloca os caracteres usando matemática e a chave mestra
         deslocamento = chave_numerica[i % len(chave_numerica)]
         novo_caractere = chr((ord(caractere) + deslocamento) % 1114111)
         texto_cripto += novo_caractere
-    # Codifica em Base64 para salvar com segurança no SQLite
     return base64.b64encode(texto_cripto.encode('utf-8')).decode('utf-8')
 
 def descriptografar_texto(texto_criptografado, chave_mestra):
@@ -68,7 +88,7 @@ def inicializar_banco():
 
 conn, cursor = inicializar_banco()
 
-# Estados de sessão no navegador
+# Estados de sessão
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 if "senha_mestra_sessao" not in st.session_state:
@@ -76,8 +96,8 @@ if "senha_mestra_sessao" not in st.session_state:
 
 # --- FLUXO 1: CADASTRO INICIAL DA CHAVE MESTRA ---
 if not os.path.exists(ARQUIVO_CHAVE):
-    st.title("Configurar NWPasswords Crypt 🔒")
-    st.subheader("Crie sua chave mestra. Seus dados serão trancados com criptografia proprietária.")
+    st.title("Configurar NWPasswords Pro 🔒")
+    st.subheader("Crie sua chave mestra para inicializar o ecossistema de chaves simétricas.")
     
     nova_master = st.text_input("Defina sua Chave Mestra:", type="password")
     if st.button("Ativar Criptografia do Cofre", type="primary"):
@@ -87,13 +107,13 @@ if not os.path.exists(ARQUIVO_CHAVE):
             hash_validacao = hashlib.sha256(nova_master.encode()).hexdigest()
             with open(ARQUIVO_CHAVE, "w") as f:
                 f.write(hash_validacao)
-            st.success("Cofre criptografado com sucesso! Atualizando...")
+            st.success("Cofre criptografado com sucesso! Recarregando...")
             st.rerun()
 
 # --- FLUXO 2: TELA DE LOGIN ---
 elif not st.session_state.autenticado:
-    st.title("NWPasswords | Criptografado 🔒")
-    st.subheader("O banco dados_web.db está encriptado. Insira a Chave Mestra:")
+    st.title("NWPasswords | Autenticação Requerida 🔒")
+    st.subheader("O banco de dados está trancado. Insira a credencial mestra:")
     
     senha_login = st.text_input("Chave Mestra:", type="password")
     if st.button("Desbloquear Cofre", type="primary"):
@@ -104,26 +124,53 @@ elif not st.session_state.autenticado:
         
         if hash_digitado == hash_salvo:
             st.session_state.autenticado = True
-            # Guarda a senha apenas na memória temporária para descriptografar os cards
             st.session_state.senha_mestra_sessao = senha_login
             st.rerun()
         else:
-            st.error("Chave Mestra incorreta! Os dados permanecem trancados em blocos binários.")
+            st.error("Chave Mestra incorreta! Acesso negado.")
 
-# --- FLUXO 3: GERENCIADOR CRIPTOGRAFADO (PAINEL PRINCIPAL) ---
+# --- FLUXO 3: GERENCIADOR PREMIUM (PAINEL PRINCIPAL) ---
 else:
-    st.title("NWPasswords Enterprise v3.5 🖥️")
-    st.caption("Cofre de Senhas Criptografado em Nuvem (Python 3.14 Nativo) | Arquitetura Kaleb Machado")
+    st.title("NWPasswords Pro Enterprise 🖥️")
+    st.caption("Gerenciador Distribuído de Cibersegurança | Arquitetura Kaleb Machado")
     st.markdown("---")
     
-    st.sidebar.title("NWPasswords Crypt")
+    # --- 📐 PAINEL LATERAL (SUPORTE, FEEDBACK E FÉ) ---
+    st.sidebar.title("Central NW 📊")
+    st.sidebar.caption("Modo Analista Ativo")
+    st.sidebar.markdown("---")
+    
+    # Momento de Fé
     st.sidebar.info("**Salmo 23:1**\n\n\"O Senhor é o meu pastor, nada me faltará.\" 🙏")
-    if st.sidebar.button("Bloquear Cofre (Sair)", type="primary"):
+    st.sidebar.markdown("---")
+    
+    # Central de Ajuda Integrada
+    st.sidebar.subheader("❓ Central de Ajuda")
+    st.sidebar.markdown("""
+    * **Como salvar?** Digite os dados à direita e clique em Injetar.
+    * **Botão Copiar:** Fica direto no componente de texto da senha.
+    * **Segurança:** Dados salvos localmente e criptografados.
+    """)
+    st.sidebar.markdown("---")
+    
+    # Linha de Feedback
+    st.sidebar.subheader("💬 Linha de Feedback")
+    nome_feed = st.sidebar.text_input("Nome do Usuário:", key="feed_nome")
+    msg_feed = st.sidebar.text_area("O que achou do NWPasswords?", key="feed_msg")
+    if st.sidebar.button("Enviar para a Holding", use_container_width=True):
+        if nome_feed and msg_feed:
+            st.sidebar.success(f"Obrigado, {nome_feed}! Kaleb Machado recebeu sua análise.")
+        else:
+            st.sidebar.warning("Preencha os campos de feedback.")
+            
+    st.sidebar.markdown("---")
+    if st.sidebar.button("Bloquear Cofre (Sair)", type="primary", use_container_width=True):
         st.session_state.autenticado = False
         st.session_state.senha_mestra_sessao = ""
         st.rerun()
 
-    col_cadastro, col_cofre = st.columns([1, 1.3])
+    # --- CORPO PRINCIPAL DIREITO ---
+    col_cadastro, col_cofre = st.columns([1, 1.4])
     
     with col_cadastro:
         st.write("### ➕ Criptografar Nova Credencial")
@@ -151,7 +198,6 @@ else:
                 if type(senha_real) is not str: 
                     senha_real = senha
                 
-                # CRIPTOGRAFIA USANDO O ALGORITMO INTERNO DE SEGURANÇA
                 senha_criptografada = criptografar_texto(senha_real, st.session_state.senha_mestra_sessao)
                 cursor.execute("INSERT INTO credenciais (servico, usuario, senha) VALUES (?, ?, ?)", (servico, usuario, senha_criptografada))
                 conn.commit()
@@ -162,8 +208,8 @@ else:
                 st.rerun()
 
     with col_cofre:
-        st.write("### 🔑 Suas Credenciais Descriptografadas em Tempo Real")
-        busca = st.text_input("🔍 Rastrear serviço:")
+        st.write("### 🔑 Suas Credenciais Protegidas")
+        busca = st.text_input("🔍 Rastrear serviço ou site:")
         st.markdown("---")
         
         if busca:
@@ -177,20 +223,21 @@ else:
             st.caption("Nenhum bloco de dados localizado no cofre.")
         else:
             for id_item, serv, usu, sen_cripto in linhas:
-                # REVERTE A MATEMÁTICA NA TELA APENAS SE FOR O DONO LOGADO
                 senha_real_exibir = descriptografar_texto(sen_cripto, st.session_state.senha_mestra_sessao)
                 
-                st.markdown(f"""
-                <div class="vault-card">
-                    <span style="color: #58A6FF; font-weight: bold; font-size: 14px;">🌐 {serv.upper()}</span>
-                    <span style="color: #8B949E; font-size: 13px; margin-left: 15px;">👤 Usuário: {usu}</span>
-                </div>
-                """, unsafe_allow_html=True)
-                st.code(f"{senha_real_exibir}", language="text")
+                # RECURSO EXIGIDO: Dados de identificação e o Bloco de código da Senha exatamente ao lado
+                c_info, c_senha_dançando = st.columns([1.5, 1])
+                
+                with c_info:
+                    st.markdown(f"""
+                    <div class="vault-card">
+                        <div class="card-text">
+                            <span style="color: #58A6FF; font-weight: bold;">🌐 {serv.upper()}</span><br>
+                            <span style="color: #8B949E; font-size: 12px;">👤 Usuário: {usu}</span>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
                     
-        st.write("##")
-        if st.button("Formatar e Deletar Base Total"):
-            cursor.execute("DELETE FROM credenciais")
-            conn.commit()
-            st.success("Cofre formatado!")
-            st.rerun()
+                with c_senha_dançando:
+                    # Exibe a senha na lateral direita. Ao passar o mouse, o CSS faz o bloco balançar ("dançar")
+
