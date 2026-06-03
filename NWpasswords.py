@@ -20,11 +20,10 @@ st.markdown("""
     .vault-card {
         background-color: #0D1117;
         border: 2px solid #58A6FF;
-        padding: 15px;
+        padding: 12px;
         border-radius: 10px;
-        margin-bottom: 5px;
+        height: 52px;
         display: flex;
-        justify-content: space-between;
         align-items: center;
     }
     .card-text { color: #FFFFFF !important; font-size: 14px; font-weight: 500; }
@@ -32,15 +31,15 @@ st.markdown("""
     /* ANIMAÇÃO DA SENHA DANÇANDO (Efeito Wave Interativo) */
     @keyframes dance {
         0% { transform: translateY(0px) rotate(0deg); }
-        25% { transform: translateY(-4px) rotate(-1deg); }
+        25% { transform: translateY(-3px) rotate(-1deg); }
         50% { transform: translateY(0px) rotate(0deg); }
-        75% { transform: translateY(4px) rotate(1deg); }
+        75% { transform: translateY(3px) rotate(1deg); }
         100% { transform: translateY(0px) rotate(0deg); }
     }
     
-    /* Aplica o efeito quando o usuário visualiza a senha no container */
+    /* Aplica o efeito quando o usuário passa o mouse na senha */
     .stCodeBlock:hover {
-        animation: dance 0.6s ease-in-out infinite;
+        animation: dance 0.5s ease-in-out infinite;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -194,8 +193,8 @@ else:
             if not servico or not usuario or (not senha and "senha_sugerida" not in st.session_state):
                 st.warning("Preencha todos os dados.")
             else:
-                senha_real = st.session_state.get("senha_sugerida", str)
-                if type(senha_real) is not str: 
+                senha_real = st.session_state.get("senha_sugerida", "default_pass")
+                if senha_real == "default_pass": 
                     senha_real = senha
                 
                 senha_criptografada = criptografar_texto(senha_real, st.session_state.senha_mestra_sessao)
@@ -219,13 +218,13 @@ else:
             
         linhas = cursor.fetchall()
         
-        if not linhas:
+        if not rows:
             st.caption("Nenhum bloco de dados localizado no cofre.")
         else:
             for id_item, serv, usu, sen_cripto in linhas:
                 senha_real_exibir = descriptografar_texto(sen_cripto, st.session_state.senha_mestra_sessao)
                 
-                # RECURSO EXIGIDO: Dados de identificação e o Bloco de código da Senha exatamente ao lado
+                # CORREÇÃO DA ENGENHARIA VISUAL: Colunas perfeitamente alinhadas e com recuos corrigidos
                 c_info, c_senha_dançando = st.columns([1.5, 1])
                 
                 with c_info:
@@ -233,11 +232,13 @@ else:
                     <div class="vault-card">
                         <div class="card-text">
                             <span style="color: #58A6FF; font-weight: bold;">🌐 {serv.upper()}</span><br>
-                            <span style="color: #8B949E; font-size: 12px;">👤 Usuário: {usu}</span>
+                            <span style="color: #8B949E; font-size: 11px;">👤 Usuário: {usu}</span>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
                     
                 with c_senha_dançando:
-                    # Exibe a senha na lateral direita. Ao passar o mouse, o CSS faz o bloco balançar ("dançar")
-
+                    st.code(f"{senha_real_exibir}", language="text")
+                    
+        st.write("##")
+        if st.button("Formatar e Deletar Base Total"):
