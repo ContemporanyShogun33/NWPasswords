@@ -218,13 +218,13 @@ else:
             
         linhas = cursor.fetchall()
         
-        if not rows:
+        if not linhas:
             st.caption("Nenhum bloco de dados localizado no cofre.")
         else:
             for id_item, serv, usu, sen_cripto in linhas:
                 senha_real_exibir = descriptografar_texto(sen_cripto, st.session_state.senha_mestra_sessao)
                 
-                # CORREÇÃO DA ENGENHARIA VISUAL: Colunas perfeitamente alinhadas e com recuos corrigidos
+                # Alinhamento tático impecável de colunas
                 c_info, c_senha_dançando = st.columns([1.5, 1])
                 
                 with c_info:
@@ -242,3 +242,5 @@ else:
                     
         st.write("##")
         if st.button("Formatar e Deletar Base Total"):
+            cursor.execute("DELETE FROM credenciais")
+
