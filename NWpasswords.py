@@ -6,17 +6,17 @@ import hashlib
 import os
 import base64
 
-# 1. Configuração de Arquitetura Web de Alta Performance
+# 1. Configuração de Arquitetura Web de Elite
 st.set_page_config(
-    page_title="NWPasswords | Cryptographic Vault Pro", 
+    page_title="NWPasswords | Pro Cryptographic Vault", 
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 🎨 UI/UX DE ANALISTA LÓGICO COM ANIMAÇÃO DA SENHA DANÇANDO
+# 🎨 DESIGN ANIVELADO E ANIMAÇÃO DA SENHA DANÇANDO (CSS ENTERPRISE)
 st.markdown("""
 <style>
-    /* Estilização Executiva (Azul e Branco sobre Fundo Escuro) */
+    /* Cartão Executivo Azul e Branco */
     .vault-card {
         background-color: #0D1117;
         border: 2px solid #58A6FF;
@@ -28,18 +28,19 @@ st.markdown("""
     }
     .card-text { color: #FFFFFF !important; font-size: 14px; font-weight: 500; }
     
-    /* ANIMAÇÃO DA SENHA DANÇANDO (Efeito Wave Interativo) */
-    @keyframes dance {
-        0% { transform: translateY(0px) rotate(0deg); }
-        25% { transform: translateY(-3px) rotate(-1deg); }
-        50% { transform: translateY(0px) rotate(0deg); }
-        75% { transform: translateY(3px) rotate(1deg); }
-        100% { transform: translateY(0px) rotate(0deg); }
+    /* EFEITO DINÂMICO: FAZ A SENHA DANÇAR NA TELA */
+    @keyframes cyber-dance {
+        0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+        25% { transform: translateY(-4px) translateX(2px) rotate(-1deg); }
+        50% { transform: translateY(0px) translateX(-2px) rotate(0deg); }
+        75% { transform: translateY(4px) translateX(2px) rotate(1deg); }
+        100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
     }
     
-    /* Aplica o efeito quando o usuário passa o mouse na senha */
+    /* Aplica a animação diretamente no bloco de código do Streamlit */
     .stCodeBlock:hover {
-        animation: dance 0.5s ease-in-out infinite;
+        animation: cyber-dance 0.4s ease-in-out infinite !important;
+        border: 1px solid #58A6FF !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -96,7 +97,7 @@ if "senha_mestra_sessao" not in st.session_state:
 # --- FLUXO 1: CADASTRO INICIAL DA CHAVE MESTRA ---
 if not os.path.exists(ARQUIVO_CHAVE):
     st.title("Configurar NWPasswords Pro 🔒")
-    st.subheader("Crie sua chave mestra para inicializar o ecossistema de chaves simétricas.")
+    st.subheader("Crie sua chave mestra para inicializar o cofre digital.")
     
     nova_master = st.text_input("Defina sua Chave Mestra:", type="password")
     if st.button("Ativar Criptografia do Cofre", type="primary"):
@@ -106,18 +107,17 @@ if not os.path.exists(ARQUIVO_CHAVE):
             hash_validacao = hashlib.sha256(nova_master.encode()).hexdigest()
             with open(ARQUIVO_CHAVE, "w") as f:
                 f.write(hash_validacao)
-            st.success("Cofre criptografado com sucesso! Recarregando...")
+            st.success("Cofre inicializado com sucesso!")
             st.rerun()
 
 # --- FLUXO 2: TELA DE LOGIN ---
 elif not st.session_state.autenticado:
     st.title("NWPasswords | Autenticação Requerida 🔒")
-    st.subheader("O banco de dados está trancado. Insira a credencial mestra:")
+    st.subheader("O cofre está encriptado. Insira a Chave Mestra:")
     
     senha_login = st.text_input("Chave Mestra:", type="password")
     if st.button("Desbloquear Cofre", type="primary"):
         hash_digitado = hashlib.sha256(senha_login.encode()).hexdigest()
-        
         with open(ARQUIVO_CHAVE, "r") as f:
             hash_salvo = f.read().strip()
         
@@ -126,41 +126,39 @@ elif not st.session_state.autenticado:
             st.session_state.senha_mestra_sessao = senha_login
             st.rerun()
         else:
-            st.error("Chave Mestra incorreta! Acesso negado.")
+            st.error("Chave Mestra incorreta!")
 
-# --- FLUXO 3: GERENCIADOR PREMIUM (PAINEL PRINCIPAL) ---
+# --- FLUXO 3: PAINEL PRINCIPAL EXECUTIVO ---
 else:
     st.title("NWPasswords Pro Enterprise 🖥️")
     st.caption("Gerenciador Distribuído de Cibersegurança | Arquitetura Kaleb Machado")
     st.markdown("---")
     
-    # --- 📐 PAINEL LATERAL (SUPORTE, FEEDBACK E FÉ) ---
+    # --- PAINEL LATERAL ---
     st.sidebar.title("Central NW 📊")
     st.sidebar.caption("Modo Analista Ativo")
     st.sidebar.markdown("---")
     
-    # Momento de Fé
+    # Fé
     st.sidebar.info("**Salmo 23:1**\n\n\"O Senhor é o meu pastor, nada me faltará.\" 🙏")
     st.sidebar.markdown("---")
     
-    # Central de Ajuda Integrada
+    # Ajuda
     st.sidebar.subheader("❓ Central de Ajuda")
-    st.sidebar.markdown("""
-    * **Como salvar?** Digite os dados à direita e clique em Injetar.
-    * **Botão Copiar:** Fica direto no componente de texto da senha.
-    * **Segurança:** Dados salvos localmente e criptografados.
-    """)
+    st.sidebar.write("* **Como Salvar:** Preencha os campos e clique em Injetar.")
+    st.sidebar.write("* **Copiar Senha:** Clique no botão de cópia dentro do bloco da senha.")
+    st.sidebar.write("* **Proteção:** Criptografia local em tempo real.")
     st.sidebar.markdown("---")
     
-    # Linha de Feedback
+    # Feedback
     st.sidebar.subheader("💬 Linha de Feedback")
-    nome_feed = st.sidebar.text_input("Nome do Usuário:", key="feed_nome")
-    msg_feed = st.sidebar.text_area("O que achou do NWPasswords?", key="feed_msg")
+    nome_feed = st.sidebar.text_input("Seu Nome:")
+    msg_feed = st.sidebar.text_area("Mensagem:")
     if st.sidebar.button("Enviar para a Holding", use_container_width=True):
         if nome_feed and msg_feed:
-            st.sidebar.success(f"Obrigado, {nome_feed}! Kaleb Machado recebeu sua análise.")
+            st.sidebar.success(f"Feedback de {nome_feed} enviado com sucesso!")
         else:
-            st.sidebar.warning("Preencha os campos de feedback.")
+            st.sidebar.warning("Preencha todos os campos do feedback.")
             
     st.sidebar.markdown("---")
     if st.sidebar.button("Bloquear Cofre (Sair)", type="primary", use_container_width=True):
@@ -190,7 +188,7 @@ else:
             st.info(f"**Sugestão:** `{st.session_state.senha_sugerida}`")
 
         if st.button("Injetar Dados Criptografados", type="primary", use_container_width=True):
-            if not servico or not usuario or (not senha and "senha_sugerida" not in st.session_state):
+            if not servico or not usuario or (not list and "senha_sugerida" not in st.session_state):
                 st.warning("Preencha todos os dados.")
             else:
                 senha_real = st.session_state.get("senha_sugerida", "default_pass")
@@ -203,7 +201,7 @@ else:
                 
                 if "senha_sugerida" in st.session_state:
                     del st.session_state.senha_sugerida
-                st.success(f"Dados trancados para {servico}!")
+                st.success("Dados trancados com sucesso!")
                 st.rerun()
 
     with col_cofre:
@@ -224,7 +222,6 @@ else:
             for id_item, serv, usu, sen_cripto in linhas:
                 senha_real_exibir = descriptografar_texto(sen_cripto, st.session_state.senha_mestra_sessao)
                 
-                # Alinhamento tático impecável de colunas
                 c_info, c_senha_dançando = st.columns([1.5, 1])
                 
                 with c_info:
@@ -243,4 +240,8 @@ else:
         st.write("##")
         if st.button("Formatar e Deletar Base Total"):
             cursor.execute("DELETE FROM credenciais")
+            conn.commit()
+            st.success("Cofre formatado!")
+            st.rerun()
+
 
